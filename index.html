@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Image Stream</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                text-align: center;
+                margin: 0;
+                padding: 0;
+            }
+            #image-container {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh; /* Full height of the viewport */
+            }
+            img {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain; /* Ensures the image fits within the container */
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Live Image Stream</h1>
+        <div id="image-container"></div>
+        <script>
+            async function fetchImages() {
+                const response = await fetch("/images");
+                const images = await response.json();
+                const container = document.getElementById("image-container");
+                container.innerHTML = "";
+                if (images.length > 0) {
+                    const latestImage = images[images.length - 1];
+                    const img = document.createElement("img");
+                    img.src = `images/${latestImage}`;
+                    container.appendChild(img);
+
+                    // Delete older images
+                    for (let i = 0; i < images.length - 1; i++) {
+                        await fetch(`/delete/${images[i]}`, {
+                            method: "DELETE",
+                        });
+                    }
+                }
+            }
+
+            // Fetch the latest image every 5 seconds
+            setInterval(fetchImages, 5000);
+            fetchImages();
+        </script>
+    </body>
+</html>
